@@ -1,0 +1,34 @@
+# Env Python 3.10.13
+albumentations==1.0.3
+certifi==2022.12.7
+colorama==0.4.4
+cycler==0.10.0
+imageio==2.9.0
+joblib==1.2.0
+kiwisolver==1.3.2
+matplotlib
+networkx==2.6.2
+opencv-python-headless
+Pillow>=9.0.0
+pyparsing==2.4.7
+python-dateutil==2.8.2
+PyWavelets
+PyYAML
+scikit-image
+scikit-learn
+scipy
+six
+threadpoolctl
+torch
+torchvision
+tqdm
+wincertstore
+tifffile
+diffusers
+transformers
+ftfy 
+gradio
+accelerate
+torch
+git+https://github.com/sberbank-ai/Real-ESRGAN.git
+rembg # for removing background task
