@@ -111,6 +111,7 @@ def main(args):
 
     # resolution image
     sr_image = model.predict(img_resized)
+    sr_image = sr_image.resize((width, height))
 
     sr_image.save("./output/output.png")
 
