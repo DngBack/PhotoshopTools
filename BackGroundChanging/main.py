@@ -4,19 +4,13 @@ import random
 import warnings
 import torch
 import numpy as np
-from trainer import Trainer, Tester
 from inference import Inference
 from diffusers import StableDiffusionInpaintPipeline
 import PIL.Image as Image
 from pathlib import Path
 import cv2
 from RealESRGAN import RealESRGAN
-from resize import (
-    resize_and_pad,
-    recover_size,
-    crop_for_filling_pre,
-    crop_for_filling_post,
-)
+from resize import resize_and_pad, recover_size
 
 from config import getConfig
 
@@ -25,7 +19,7 @@ args = getConfig()
 
 
 def replace_img_with_sd(img, mask, text_prompt, step=50, device="cuda"):
-    guidance_scale = 1.5
+    # guidance_scale = 1.5
     pipe = StableDiffusionInpaintPipeline.from_pretrained(
         "stabilityai/stable-diffusion-2-inpainting",
         torch_dtype=torch.float32,
@@ -35,8 +29,7 @@ def replace_img_with_sd(img, mask, text_prompt, step=50, device="cuda"):
     img_padded = pipe(
         prompt=text_prompt,
         image=Image.fromarray(img),
-        mask_image=Image.fromarray(255 - mask),
-        guidance_scale=guidance_scale,
+        mask_image=Image.fromarray(mask),
         num_inference_steps=step,
     ).images[0]
     # mask_resized = np.expand_dims(mask_resized, -1) / 255
@@ -60,13 +53,6 @@ def main(args):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-    # if args.action == 'train':
-    #     save_path = os.path.join(args.model_path, args.dataset, f'TE{args.arch}_{str(args.exp_num)}')
-
-    #     # Create model directory
-    #     os.makedirs(save_path, exist_ok=True)
-    #     Trainer(args, save_path)
-
     # elif args.action == 'test':
     #     save_path = os.path.join(args.model_path, args.dataset, f'TE{args.arch}_{str(args.exp_num)}')
     #     datasets = ['DUTS', 'DUT-O', 'HKU-IS', 'ECSSD', 'PASCAL-S']
@@ -86,10 +72,8 @@ def main(args):
     Inference(args, save_path).test()
 
     # Get path image
-    img = cv2.imread("./data/custom_dataset/freestock_105548927.jpg")
-    mask = cv2.imread(
-        "./mask/custom_dataset/freestock_105548927.png", cv2.IMREAD_GRAYSCALE
-    )
+    img = cv2.imread("./data/custom_dataset/photographers-1(1)(1).png")
+    mask = cv2.imread("./mask/custom_dataset/mask.png", cv2.IMREAD_GRAYSCALE)
 
     # resize with pad
     img_padded, mask_padded, padding_factors = resize_and_pad(img, mask)
@@ -97,25 +81,29 @@ def main(args):
     # Get some config
     prompt = "Warm Coffee House with some plants"
     device = "cuda"
-    guidance_scale = 7.5
+    # guidance_scale = 7.5
     step = 100
     height, width, _ = img.shape
 
+    pipe = StableDiffusionInpaintPipeline.from_pretrained(
+        "stabilityai/stable-diffusion-2-inpainting",
+        torch_dtype=torch.float32,
+    ).to(device)
+
     # Use API to converse
-    img_change_back = replace_img_with_sd(
-        img=img_padded,
-        mask=mask_padded,
-        text_prompt=prompt,
-        guidance_scale=guidance_scale,
-        step=step,
-        device=device,
-    )
-    # cv2.imwrite("./output.png", img_background)
+    img_change_back = pipe(
+        prompt=prompt,
+        image=Image.fromarray(img_padded),
+        mask_image=Image.fromarray(255 - mask_padded),
+        num_inference_steps=step,
+    ).images[0]
 
     # Recover the size
     img_resized, mask_resized = recover_size(
-        np.array(img_padded), mask_padded, (height, width), padding_factors
+        np.array(img_change_back), mask_padded, (height, width), padding_factors
     )
+
+    img_resized = cv2.cvtColor(img_resized, cv2.COLOR_BGR2RGB)
 
     # Set up up solution
     model = RealESRGAN(device, scale=4)
