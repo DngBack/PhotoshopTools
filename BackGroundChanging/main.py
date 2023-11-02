@@ -10,32 +10,14 @@ import PIL.Image as Image
 from pathlib import Path
 import cv2
 from RealESRGAN import RealESRGAN
+from diffusers import AutoPipelineForInpainting
+from diffusers.utils import load_image
 from resize import resize_and_pad, recover_size
 
 from config import getConfig
 
 warnings.filterwarnings("ignore")
 args = getConfig()
-
-
-def replace_img_with_sd(img, mask, text_prompt, step=50, device="cuda"):
-    # guidance_scale = 1.5
-    pipe = StableDiffusionInpaintPipeline.from_pretrained(
-        "stabilityai/stable-diffusion-2-inpainting",
-        torch_dtype=torch.float32,
-    ).to(device)
-    # img_padded, mask_padded, padding_factors = resize_and_pad(img, mask)
-
-    img_padded = pipe(
-        prompt=text_prompt,
-        image=Image.fromarray(img),
-        mask_image=Image.fromarray(mask),
-        num_inference_steps=step,
-    ).images[0]
-    # mask_resized = np.expand_dims(mask_resized, -1) / 255
-    # img_resized = img_resized * (1-mask_resized) + img * mask_resized
-    img_resized = np.array(img_padded)
-    return img_resized
 
 
 def main(args):
@@ -71,49 +53,69 @@ def main(args):
 
     Inference(args, save_path).test()
 
-    # Get path image
-    img = cv2.imread("./data/custom_dataset/photographers-1(1)(1).png")
-    mask = cv2.imread("./mask/custom_dataset/mask.png", cv2.IMREAD_GRAYSCALE)
+    # Load pretrain
+    pipe = AutoPipelineForInpainting.from_pretrained(
+        "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+        torch_dtype=torch.float16,
+        variant="fp16",
+    ).to("cuda")
+
+    # Set Path
+    img_url = "./data/custom_dataset/freestock_105548927.jpg"
+    mask_url = "./mask/custom_dataset/freestock_105548927.png"
+
+    # # Get path image
+    # img = cv2.imread("./data/custom_dataset/freestock_105548927.jpg")
+    # mask = cv2.imread(
+    #     "./mask/custom_dataset/freestock_105548927.png", cv2.IMREAD_GRAYSCALE
+    # )
 
     # resize with pad
-    img_padded, mask_padded, padding_factors = resize_and_pad(img, mask)
+    image = load_image(img_url).resize((1024, 1024))
+    mask_image = load_image(mask_url).resize((1024, 1024))
 
     # Get some config
     prompt = "Warm Coffee House with some plants"
     device = "cuda"
+    generator = torch.Generator(device="cuda").manual_seed(0)
     # guidance_scale = 7.5
     step = 100
-    height, width, _ = img.shape
+    # height, width, _ = img.shape
 
-    pipe = StableDiffusionInpaintPipeline.from_pretrained(
-        "stabilityai/stable-diffusion-2-inpainting",
-        torch_dtype=torch.float32,
-    ).to(device)
-
-    # Use API to converse
-    img_change_back = pipe(
+    image = pipe(
         prompt=prompt,
-        image=Image.fromarray(img_padded),
-        mask_image=Image.fromarray(255 - mask_padded),
-        num_inference_steps=step,
+        image=image,
+        mask_image=mask_image,
+        guidance_scale=8.0,
+        num_inference_steps=20,  # steps between 15 and 30 work well for us
+        strength=0.99,  # make sure to use `strength` below 1.0
+        generator=generator,
     ).images[0]
 
-    # Recover the size
-    img_resized, mask_resized = recover_size(
-        np.array(img_change_back), mask_padded, (height, width), padding_factors
-    )
+    # Use API to converse
+    # img_change_back = pipe(
+    #     prompt=prompt,
+    #     image=Image.fromarray(img_padded),
+    #     mask_image=Image.fromarray(255 - mask_padded),
+    #     num_inference_steps=step,
+    # ).images[0]
 
-    img_resized = cv2.cvtColor(img_resized, cv2.COLOR_BGR2RGB)
+    # Recover the size
+    # img_resized, mask_resized = recover_size(
+    #     np.array(img_change_back), mask_padded, (height, width), padding_factors
+    # )
+
+    # img_resized = cv2.cvtColor(img_resized, cv2.COLOR_BGR2RGB)
 
     # Set up up solution
-    model = RealESRGAN(device, scale=4)
-    model.load_weights("weights/RealESRGAN_x4.pth", download=True)
+    # model = RealESRGAN(device, scale=4)
+    # model.load_weights("weights/RealESRGAN_x4.pth", download=True)
 
-    # resolution image
-    sr_image = model.predict(img_resized)
-    sr_image = sr_image.resize((width, height))
+    # # resolution image
+    # sr_image = model.predict(img_resized)
+    # sr_image = sr_image.resize((width, height))
 
-    sr_image.save("./output/output.png")
+    image.save("./output/output.png")
 
 
 if __name__ == "__main__":
