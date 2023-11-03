@@ -95,7 +95,7 @@ def main(args):
     sr_image = model.predict(img_resized)
     sr_image = sr_image.resize((width, height))
 
-    sr_image.save("./yellow_cat_on_park_bench.png")
+    sr_image.save("./output/output.png")
 
 
 if __name__ == "__main__":
