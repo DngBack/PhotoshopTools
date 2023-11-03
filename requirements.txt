@@ -31,4 +31,5 @@ gradio
 accelerate
 torch
 git+https://github.com/sberbank-ai/Real-ESRGAN.git
+pipe
 rembg # for removing background task

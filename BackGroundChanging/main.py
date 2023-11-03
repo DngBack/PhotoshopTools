@@ -13,6 +13,7 @@ from RealESRGAN import RealESRGAN
 from diffusers import AutoPipelineForInpainting
 from diffusers.utils import load_image
 from resize import resize_and_pad, recover_size
+import pipe
 
 from config import getConfig
 
@@ -35,18 +36,6 @@ def main(args):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-    # elif args.action == 'test':
-    #     save_path = os.path.join(args.model_path, args.dataset, f'TE{args.arch}_{str(args.exp_num)}')
-    #     datasets = ['DUTS', 'DUT-O', 'HKU-IS', 'ECSSD', 'PASCAL-S']
-
-    #     for dataset in datasets:
-    #         args.dataset = dataset
-    #         test_loss, test_mae, test_maxf, test_avgf, test_s_m = Tester(args, save_path).test()
-
-    #         print(f'Test Loss:{test_loss:.3f} | MAX_F:{test_maxf:.4f} '
-    #               f'| AVG_F:{test_avgf:.4f} | MAE:{test_mae:.4f} | S_Measure:{test_s_m:.4f}')
-    # else:
-
     save_path = os.path.join(
         args.model_path, args.dataset, f"TE{args.arch}_{str(args.exp_num)}"
     )
@@ -61,28 +50,31 @@ def main(args):
     ).to("cuda")
 
     # Set Path
-    img_url = "./data/custom_dataset/freestock_105548927.jpg"
-    mask_url = "./mask/custom_dataset/freestock_105548927.png"
+    img_url = "./data/custom_dataset/fd56c4e09c.jpg"
+    mask_url = "mask_replace.png"
 
-    # # Get path image
-    # img = cv2.imread("./data/custom_dataset/freestock_105548927.jpg")
-    # mask = cv2.imread(
-    #     "./mask/custom_dataset/freestock_105548927.png", cv2.IMREAD_GRAYSCALE
-    # )
+    # Get mask
+    mask_image = cv2.imread(
+        "./mask/custom_dataset/fd56c4e09c.png", cv2.IMREAD_GRAYSCALE
+    )
+
+    height, width = mask_image.shape
+
+    mask_image = 255 - mask_image
+
+    filename = "mask_replace.png"
+    status = cv2.imwrite(filename, mask_image)
 
     # resize with pad
     image = load_image(img_url).resize((1024, 1024))
     mask_image = load_image(mask_url).resize((1024, 1024))
 
     # Get some config
-    prompt = "Warm Coffee House with some plants"
+    prompt = "Office in Maketing Company "
     device = "cuda"
     generator = torch.Generator(device="cuda").manual_seed(0)
-    # guidance_scale = 7.5
-    step = 100
-    # height, width, _ = img.shape
 
-    image = pipe(
+    image_out = pipe(
         prompt=prompt,
         image=image,
         mask_image=mask_image,
@@ -92,30 +84,18 @@ def main(args):
         generator=generator,
     ).images[0]
 
-    # Use API to converse
-    # img_change_back = pipe(
-    #     prompt=prompt,
-    #     image=Image.fromarray(img_padded),
-    #     mask_image=Image.fromarray(255 - mask_padded),
-    #     num_inference_steps=step,
-    # ).images[0]
-
-    # Recover the size
-    # img_resized, mask_resized = recover_size(
-    #     np.array(img_change_back), mask_padded, (height, width), padding_factors
-    # )
-
-    # img_resized = cv2.cvtColor(img_resized, cv2.COLOR_BGR2RGB)
+    # Resized Image
+    img_resized = image_out.resize((height, width))
 
     # Set up up solution
-    # model = RealESRGAN(device, scale=4)
-    # model.load_weights("weights/RealESRGAN_x4.pth", download=True)
+    model = RealESRGAN(device, scale=4)
+    model.load_weights("weights/RealESRGAN_x4.pth", download=True)
 
-    # # resolution image
-    # sr_image = model.predict(img_resized)
-    # sr_image = sr_image.resize((width, height))
+    # resolution image
+    sr_image = model.predict(img_resized)
+    sr_image = sr_image.resize((width, height))
 
-    image.save("./output/output.png")
+    sr_image.save("./yellow_cat_on_park_bench.png")
 
 
 if __name__ == "__main__":
