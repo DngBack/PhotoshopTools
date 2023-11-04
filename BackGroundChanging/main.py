@@ -48,13 +48,11 @@ def main(args):
     ).to("cuda")
 
     # Set Path
-    img_url = "./data/custom_dataset/fd56c4e09c.jpg"
+    img_url = "./data/custom_dataset/Test2.png"
     mask_url = "mask_replace.png"
 
     # Get mask
-    mask_image = cv2.imread(
-        "./mask/custom_dataset/fd56c4e09c.png", cv2.IMREAD_GRAYSCALE
-    )
+    mask_image = cv2.imread("./mask/custom_dataset/Test2.png", cv2.IMREAD_GRAYSCALE)
 
     height, width = mask_image.shape
 
