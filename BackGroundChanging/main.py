@@ -4,7 +4,7 @@ import random
 import warnings
 import torch
 import numpy as np
-from BackGroundChanging.inference.inference import Inference
+from inference.inference import Inference
 import PIL.Image as Image
 from pathlib import Path
 import cv2
