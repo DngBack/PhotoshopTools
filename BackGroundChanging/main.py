@@ -4,15 +4,13 @@ import random
 import warnings
 import torch
 import numpy as np
-from inference import Inference
-from diffusers import StableDiffusionInpaintPipeline
+from BackGroundChanging.inference.inference import Inference
 import PIL.Image as Image
 from pathlib import Path
 import cv2
 from RealESRGAN import RealESRGAN
 from diffusers import AutoPipelineForInpainting
 from diffusers.utils import load_image
-from resize import resize_and_pad, recover_size
 import pipe
 
 from config import getConfig
