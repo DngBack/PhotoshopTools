@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.transforms import transforms
 from tqdm import tqdm
-from BackGroundChanging.util.dataloader import get_test_augmentation, get_loader
+from util.dataloader import get_test_augmentation, get_loader
 from model.TRACER import TRACER
 from util.utils import load_pretrained
 

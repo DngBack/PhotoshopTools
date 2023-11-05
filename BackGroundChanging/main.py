@@ -34,6 +34,18 @@ def main(args):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
+    # Set Some Config Path
+    img_url = "./data/custom_dataset/Image.png"
+    mask_url = "./mask/custom_dataset/Image.png"
+    maskReplace_url = "./mask_replace/mask_replace.png"
+    output_url = "./output/output.png"
+
+    # Get image
+    input_url = ""
+    inputImage = cv2.imread(input_url)
+    save_input = cv2.imwrite(img_url, inputImage)
+
+    # Remove Back ground and get
     save_path = os.path.join(
         args.model_path, args.dataset, f"TE{args.arch}_{str(args.exp_num)}"
     )
@@ -47,26 +59,18 @@ def main(args):
         variant="fp16",
     ).to("cuda")
 
-    # Set Path
-    img_url = "./data/custom_dataset/Test2.png"
-    mask_url = "mask_replace.png"
-
     # Get mask
-    mask_image = cv2.imread("./mask/custom_dataset/Test2.png", cv2.IMREAD_GRAYSCALE)
-
+    mask_image = cv2.imread(mask_url, cv2.IMREAD_GRAYSCALE)
     height, width = mask_image.shape
-
     mask_image = 255 - mask_image
+    status = cv2.imwrite(maskReplace_url, mask_image)
 
-    filename = "mask_replace.png"
-    status = cv2.imwrite(filename, mask_image)
-
-    # resize with pad
+    # resize Image for stable diffusion
     image = load_image(img_url).resize((1024, 1024))
-    mask_image = load_image(mask_url).resize((1024, 1024))
+    mask_image = load_image(maskReplace_url).resize((1024, 1024))
 
-    # Get some config
-    prompt = "Office in Maketing Company "
+    # Get some config for
+    prompt = "Office in Maketing Company"
     device = "cuda"
     generator = torch.Generator(device="cuda").manual_seed(0)
 
@@ -91,7 +95,7 @@ def main(args):
     sr_image = model.predict(img_resized)
     sr_image = sr_image.resize((width, height))
 
-    sr_image.save("./output/output.png")
+    sr_image.save(output_url)
 
 
 if __name__ == "__main__":
