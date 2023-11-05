@@ -41,7 +41,7 @@ def main(args):
     output_url = "./output/output.png"
 
     # Get image
-    input_url = ""
+    input_url = "./Image/Test3.jpg"
     inputImage = cv2.imread(input_url)
     save_input = cv2.imwrite(img_url, inputImage)
 
