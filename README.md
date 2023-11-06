@@ -5,6 +5,7 @@ Update Task :
 - Background Diffusion
 - Background Removal
 - Remove Object with Inpainting
+- Inpainting image
 
 ## Background Changing Example
 
@@ -17,3 +18,9 @@ Update Task :
 | 5 | A Coffe House | ![Image](BackGroundChanging/Image/Test3.jpg) | ![Image](BackGroundChanging/Image/Test3Out.png)| (640, 360) | 20 |
 | 6 | A man is standing in a pedestrian street with lots of trees and lots of sunlight. | ![Image](BackGroundChanging/Image/Test3.jpg) | ![Image](BackGroundChanging/Image/Test3Out1.png)| (640, 360) | 20 |
 | 7 | The man is standing in front of a cafe with a few tall trees and a bus stop | ![Image](BackGroundChanging/Image/Test2.png) | ![Image](BackGroundChanging/Image/Test2Out2.png)| (960, 550) | 20 |
+
+## Background Removal Example
+
+|Order | Image Imput | Output Image |
+|------|-------------|--------------|
+| 1 | ![Image](BackgroundRemoval/Image/Test2.png) | ![Image](BackgroundRemoval/Image/Output1.png) |

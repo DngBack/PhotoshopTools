@@ -104,11 +104,14 @@ class Inference:
                 ),
             ]
         )
-        original_image = invTrans(original_image)
-
         original_image = F.interpolate(
             original_image.unsqueeze(0), size=(height, width), mode="bilinear"
         )
+        original_image = invTrans(original_image)
+
+        # original_image = F.interpolate(
+        #     original_image.unsqueeze(0), size=(height, width), mode="bilinear"
+        # )
         original_image = (
             original_image.squeeze().permute(1, 2, 0).detach().cpu().numpy() * 255.0
         ).astype(np.uint8)
