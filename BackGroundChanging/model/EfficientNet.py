@@ -10,7 +10,7 @@ Reimplemented: Min Seok Lee and Wooseok Shin
 import torch
 from torch import nn
 from torch.nn import functional as F
-from utils.effi_utils import (
+from util.effi_utils import (
     get_model_shape,
     round_filters,
     round_repeats,

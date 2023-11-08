@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from model.EfficientNet import EfficientNet
-from utils.effi_utils import get_model_shape
+from util.effi_utils import get_model_shape
 from modules.att_modules import RFB_Block, aggregation, ObjectAttention
 
 

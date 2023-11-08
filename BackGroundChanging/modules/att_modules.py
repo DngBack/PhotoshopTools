@@ -4,7 +4,7 @@ author: Min Seok Lee and Wooseok Shin
 import numpy as np
 import torch.nn as nn
 from torch.fft import fft2, fftshift, ifft2, ifftshift
-from utils.utils import *
+from util.utils import *
 import torch.nn.functional as F
 from config import getConfig
 from modules.conv_modules import BasicConv2d, DWConv, DWSConv
