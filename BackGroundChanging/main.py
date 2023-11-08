@@ -12,6 +12,8 @@ from RealESRGAN import RealESRGAN
 from diffusers import AutoPipelineForInpainting
 from diffusers.utils import load_image
 import pipe
+from resolution import resolution
+from bgChanging import ChangingBg
 
 from config import getConfig
 
@@ -41,7 +43,7 @@ def main(args):
     output_url = "./output/output.png"
 
     # Get image
-    input_url = "./Image/Test3.jpg"
+    input_url = "./Image/Test2.png"
     inputImage = cv2.imread(input_url)
     save_input = cv2.imwrite(img_url, inputImage)
 
@@ -53,47 +55,42 @@ def main(args):
     Inference(args, save_path).test()
 
     # Load pretrain
-    pipe = AutoPipelineForInpainting.from_pretrained(
-        "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
-        torch_dtype=torch.float16,
-        variant="fp16",
-    ).to("cuda")
+    # pipe = AutoPipelineForInpainting.from_pretrained(
+    #     "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+    #     torch_dtype=torch.float16,
+    #     variant="fp16",
+    # ).to("cuda")
 
     # Get mask
     mask_image = cv2.imread(mask_url, cv2.IMREAD_GRAYSCALE)
     height, width = mask_image.shape
     mask_image = 255 - mask_image
-    status = cv2.imwrite(maskReplace_url, mask_image)
+    cv2.imwrite(maskReplace_url, mask_image)
 
     # resize Image for stable diffusion
     image = load_image(img_url).resize((1024, 1024))
     mask_image = load_image(maskReplace_url).resize((1024, 1024))
 
     # Get some config for
-    prompt = "Office in Maketing Company"
+    prompt = "A boy, coffe house, book, brown table, lamp, a television"
     device = "cuda"
     generator = torch.Generator(device="cuda").manual_seed(0)
 
-    image_out = pipe(
-        prompt=prompt,
-        image=image,
-        mask_image=mask_image,
-        guidance_scale=8.0,
-        num_inference_steps=20,  # steps between 15 and 30 work well for us
-        strength=0.99,  # make sure to use `strength` below 1.0
-        generator=generator,
-    ).images[0]
+    # image_out = pipe(
+    #     prompt=prompt,
+    #     image=image,
+    #     mask_image=mask_image,
+    #     guidance_scale=8.0,
+    #     num_inference_steps=20,  # steps between 15 and 30 work well for us
+    #     strength=0.99,  # make sure to use `strength` below 1.0
+    #     generator=generator,
+    # ).images[0]
+    image_out = ChangingBg(image, mask_image, prompt, generator)
 
     # Resized Image
     img_resized = image_out.resize((height, width))
 
-    # Set up up solution
-    model = RealESRGAN(device, scale=4)
-    model.load_weights("weights/RealESRGAN_x4.pth", download=True)
-
-    # resolution image
-    sr_image = model.predict(img_resized)
-    sr_image = sr_image.resize((width, height))
+    sr_image = resolution(img_resized, height, width, device)
 
     sr_image.save(output_url)
 

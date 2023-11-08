@@ -7,14 +7,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from model.EfficientNet import EfficientNet
-from util.effi_utils import get_model_shape
+from utils.effi_utils import get_model_shape
 from modules.att_modules import RFB_Block, aggregation, ObjectAttention
 
 
 class TRACER(nn.Module):
     def __init__(self, cfg):
         super().__init__()
-        self.model = EfficientNet.from_pretrained(f'efficientnet-b{cfg.arch}', advprop=True)
+        self.model = EfficientNet.from_pretrained(
+            f"efficientnet-b{cfg.arch}", advprop=True
+        )
         self.block_idx, self.channels = get_model_shape()
 
         # Receptive Field Blocks
@@ -43,16 +45,19 @@ class TRACER(nn.Module):
 
         D_0 = self.agg(x5_rfb, x4_rfb, x3_rfb)
 
-        ds_map0 = F.interpolate(D_0, scale_factor=8, mode='bilinear')
+        ds_map0 = F.interpolate(D_0, scale_factor=8, mode="bilinear")
 
         D_1 = self.ObjectAttention2(D_0, features[1])
-        ds_map1 = F.interpolate(D_1, scale_factor=8, mode='bilinear')
+        ds_map1 = F.interpolate(D_1, scale_factor=8, mode="bilinear")
 
-        ds_map = F.interpolate(D_1, scale_factor=2, mode='bilinear')
+        ds_map = F.interpolate(D_1, scale_factor=2, mode="bilinear")
         D_2 = self.ObjectAttention1(ds_map, features[0])
-        ds_map2 = F.interpolate(D_2, scale_factor=4, mode='bilinear')
+        ds_map2 = F.interpolate(D_2, scale_factor=4, mode="bilinear")
 
         final_map = (ds_map2 + ds_map1 + ds_map0) / 3
 
-        return torch.sigmoid(final_map), torch.sigmoid(edge), \
-               (torch.sigmoid(ds_map0), torch.sigmoid(ds_map1), torch.sigmoid(ds_map2))
+        return (
+            torch.sigmoid(final_map),
+            torch.sigmoid(edge),
+            (torch.sigmoid(ds_map0), torch.sigmoid(ds_map1), torch.sigmoid(ds_map2)),
+        )

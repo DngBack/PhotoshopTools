@@ -10,9 +10,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.transforms import transforms
 from tqdm import tqdm
-from util.dataloader import get_test_augmentation, get_loader
+from utils.dataloader import get_test_augmentation, get_loader
 from model.TRACER import TRACER
-from util.utils import load_pretrained
+from utils.utils import load_pretrained
 
 
 class Inference:
@@ -104,14 +104,9 @@ class Inference:
                 ),
             ]
         )
-        original_image = F.interpolate(
-            original_image.unsqueeze(0), size=(height, width), mode="bilinear"
-        )
+
         original_image = invTrans(original_image)
 
-        # original_image = F.interpolate(
-        #     original_image.unsqueeze(0), size=(height, width), mode="bilinear"
-        # )
         original_image = (
             original_image.squeeze().permute(1, 2, 0).detach().cpu().numpy() * 255.0
         ).astype(np.uint8)
