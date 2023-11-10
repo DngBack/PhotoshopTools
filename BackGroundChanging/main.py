@@ -12,8 +12,9 @@ from RealESRGAN import RealESRGAN
 from diffusers import AutoPipelineForInpainting
 from diffusers.utils import load_image
 import pipe
-from resolution import resolution
-from bgChanging import ChangingBg
+from model.resolution import resolution, refiner
+from model.bgChanging import ChangingBg
+import time
 
 from config import getConfig
 
@@ -22,9 +23,6 @@ args = getConfig()
 
 
 def main(args):
-    print("<---- Training Params ---->")
-    pprint.pprint(args)
-
     # Random Seed
     seed = args.seed
     os.environ["PYTHONHASHSEED"] = str(seed)
@@ -43,7 +41,7 @@ def main(args):
     output_url = "./output/output.png"
 
     # Get image
-    input_url = "./Image/Test2.png"
+    input_url = "./Image/Test1.jpg"
     inputImage = cv2.imread(input_url)
     save_input = cv2.imwrite(img_url, inputImage)
 
@@ -52,14 +50,10 @@ def main(args):
         args.model_path, args.dataset, f"TE{args.arch}_{str(args.exp_num)}"
     )
 
+    # Get pre-mask
+    t_getmask = time.time()
     Inference(args, save_path).test()
-
-    # Load pretrain
-    # pipe = AutoPipelineForInpainting.from_pretrained(
-    #     "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
-    #     torch_dtype=torch.float16,
-    #     variant="fp16",
-    # ).to("cuda")
+    print("Time of get mask processing: ", time.time() - t_getmask)
 
     # Get mask
     mask_image = cv2.imread(mask_url, cv2.IMREAD_GRAYSCALE)
@@ -76,21 +70,18 @@ def main(args):
     device = "cuda"
     generator = torch.Generator(device="cuda").manual_seed(0)
 
-    # image_out = pipe(
-    #     prompt=prompt,
-    #     image=image,
-    #     mask_image=mask_image,
-    #     guidance_scale=8.0,
-    #     num_inference_steps=20,  # steps between 15 and 30 work well for us
-    #     strength=0.99,  # make sure to use `strength` below 1.0
-    #     generator=generator,
-    # ).images[0]
+    # Changing Background
+    t_sd = time.time()
     image_out = ChangingBg(image, mask_image, prompt, generator)
+    print("Time of changing BackGround: ", time.time() - t_sd)
 
     # Resized Image
     img_resized = image_out.resize((height, width))
 
+    t_sr = time.time()
     sr_image = resolution(img_resized, height, width, device)
+    sr_image = refiner(img_resized, prompt, device)
+    print("Time of high resolution: ", time.time() - t_sr)
 
     sr_image.save(output_url)
 

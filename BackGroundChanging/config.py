@@ -49,7 +49,7 @@ def getConfig():
 
     # Hardware settings
     parser.add_argument("--multi_gpu", type=bool, default=True)
-    parser.add_argument("--num_workers", type=int, default=4)
+    parser.add_argument("--num_workers", type=int, default=1)
     cfg = parser.parse_args()
 
     return cfg

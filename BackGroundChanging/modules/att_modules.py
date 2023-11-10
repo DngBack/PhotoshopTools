@@ -62,10 +62,12 @@ class Frequency_Edge_Module(nn.Module):
         Returns:
             Edge refined representation: X + edge (B, C, H, W)
         """
+        device = x.device
         x_fft = fft2(x, dim=(-2, -1))
         x_fft = fftshift(x_fft)
 
         # Mask -> low, high separate
+        # mask = self.mask_radial(img=x, r=self.radius).to(device)
         mask = self.mask_radial(img=x, r=self.radius).cuda()
         high_frequency = x_fft * (1 - mask)
         x_fft = ifftshift(high_frequency)
