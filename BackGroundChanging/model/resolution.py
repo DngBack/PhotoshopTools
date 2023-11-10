@@ -30,5 +30,5 @@ def refiner(
         use_safetensors=True,
     )
     pipe = pipe.to(device)
-    image_refiner = pipe(prompt, image=image).images
+    image_refiner = pipe(prompt, image=image).images[0]
     return image_refiner

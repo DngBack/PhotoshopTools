@@ -79,7 +79,7 @@ def main(args):
     img_resized = image_out.resize((height, width))
 
     t_sr = time.time()
-    sr_image = resolution(img_resized, height, width, device)
+    # sr_image = resolution(img_resized, height, width, device)
     sr_image = refiner(img_resized, prompt, device)
     print("Time of high resolution: ", time.time() - t_sr)
 
