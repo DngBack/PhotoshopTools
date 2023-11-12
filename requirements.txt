@@ -32,4 +32,9 @@ accelerate
 torch
 git+https://github.com/sberbank-ai/Real-ESRGAN.git
 pipe
+huggingface_hub 
+accelerate 
+safetensors 
+diffusers 
+invisible-watermark>=0.2.0
 rembg # for removing background task

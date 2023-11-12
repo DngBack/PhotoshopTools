@@ -62,7 +62,7 @@ def main(args):
     cv2.imwrite(maskReplace_url, mask_image)
 
     # resize Image for stable diffusion
-    image = load_image(img_url).resize((1024, 1024))
+    image = load_image(img_url).resize((1024, 1024), resample=Image.Resampling.LANCZOS)
     mask_image = load_image(maskReplace_url).resize((1024, 1024))
 
     # Get some config for

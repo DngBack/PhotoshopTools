@@ -21,3 +21,7 @@ Task : Background Changing with using prompt
 | 12 | The man is standing in front of a cafe with a few tall trees and a bus stop | ![Image](Image/Test2.png) | ![Image](Image/Test2Out2.png)| (960, 550) | 20 |
 | 13 | The man is standing in front of a cafe with a few tall trees and a bus stop | ![Image](Image/Test2.png) | ![Image](Image/Test2Out3.png)| (960, 550) | 30 |
 | 14 | Office in Maketing Company | ![Image](Image/Test2.png) | ![Image](Image/Test2Out4.png)| (960, 550) | 20 |
+
+|Input | Prompt | Output | Output with adding | Image Adding |
+|------|-------------|-------------|----------|----------|
+| ![Image](Image/test5.jpg)|A young woman is standing in the classroom with green wall.|![Image](Image/test5out2.jpeg) | ![Image](Image/addingadding.jpeg)|![Image](Image/addingadding.jpg)|
