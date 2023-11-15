@@ -1,20 +1,20 @@
 import os
-import pprint
 import random
 import warnings
 import torch
 import numpy as np
 from inference.inference import Inference
 import PIL.Image as Image
-from pathlib import Path
 import cv2
+import time
 from RealESRGAN import RealESRGAN
 from diffusers import AutoPipelineForInpainting
 from diffusers.utils import load_image
-import pipe
-from model.resolution import resolution, refiner
+from model.resolution import resolution
 from model.bgChanging import ChangingBg
-import time
+from diffusers import StableDiffusionXLInpaintPipeline
+from diffusers import DiffusionPipeline
+from model.diffusion_gen import *
 
 from config import getConfig
 
@@ -57,33 +57,52 @@ def main(args):
 
     # Get mask
     mask_image = cv2.imread(mask_url, cv2.IMREAD_GRAYSCALE)
-    height, width = mask_image.shape
     mask_image = 255 - mask_image
     cv2.imwrite(maskReplace_url, mask_image)
 
     # resize Image for stable diffusion
-    image = load_image(img_url).resize((1024, 1024), resample=Image.Resampling.LANCZOS)
-    mask_image = load_image(maskReplace_url).resize((1024, 1024))
+    image = load_image(img_url)
+    mask_image = load_image(maskReplace_url)
 
-    # Get some config for
-    prompt = "A boy, coffe house, book, brown table, lamp, a television"
-    device = "cuda"
-    generator = torch.Generator(device="cuda").manual_seed(0)
+    # Setup hyper parameters
+    hp_dict = {
+        "seed": -305,
+        "kernel_size": (5, 5),
+        "kernel_iterations": 15,
+        "num_inference_steps": 70,
+        "denoising_start": 0.70,
+        "guidance_scale": 7.5,
+        "prompt": args.prompt,
+        "negative_prompt": args.negative_prompt,
+    }
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Changing Background
-    t_sd = time.time()
-    image_out = ChangingBg(image, mask_image, prompt, generator)
-    print("Time of changing BackGround: ", time.time() - t_sd)
+    # Model Pipeline calling
+    inpaint_pipe = AutoPipelineForInpainting.from_pretrained(
+        "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+        torch_dtype=torch.float16,
+        variant="fp16",
+    )
 
-    # Resized Image
-    img_resized = image_out.resize((height, width))
+    refine_pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
+        "stabilityai/stable-diffusion-xl-refiner-1.0",
+        text_encoder_2=inpaint_pipe.text_encoder_2,
+        vae=inpaint_pipe.vae,
+        torch_dtype=torch.float16,
+        use_safetensors=True,
+        variant="fp16",
+    )
 
-    t_sr = time.time()
-    sr_image = resolution(img_resized, height, width, device)
-    # sr_image = refiner(img_resized, prompt, device)
-    print("Time of high resolution: ", time.time() - t_sr)
+    # Execute
+    diffusion_gen = DiffusionGeneration_v2(inpaint_pipe, refine_pipe, hp_dict, device)
 
-    sr_image.save(output_url)
+    # Get input
+    image = Image.open("./output/output.png")
+    mask = Image.open("./mask_replace/mask_replace.png")
+
+    # Generate Image
+    output_Image = diffusion_gen.forward(image, mask)
+    output_Image.save(output_url)
 
 
 if __name__ == "__main__":

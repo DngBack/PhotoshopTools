@@ -2,7 +2,6 @@ from diffusers import AutoPipelineForInpainting
 from diffusers.utils import load_image
 import torch
 import numpy as np
-from comet_ml import Experiment
 
 
 def ChangingBg(image, mask_image, prompt, generator):
@@ -23,25 +22,3 @@ def ChangingBg(image, mask_image, prompt, generator):
     ).images[0]
 
     return image_out
-
-
-def ChangingBg_refiner(image, mask_image, prompt, device):
-    sd_pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
-        "stabilityai/stable-diffusion-xl-base-1.0",
-        torch_dtype=torch.float16,
-        variant="fp16",
-        use_safetensors=True,
-    ).to(device)
-
-    refiner = StableDiffusionXLInpaintPipeline.from_pretrained(
-        "stabilityai/stable-diffusion-xl-refiner-1.0",
-        text_encoder_2=sd_pipe.text_encoder_2,
-        vae=sd_pipe.vae,
-        torch_dtype=torch.float16,
-        use_safetensors=True,
-        variant="fp16",
-    ).to(device)
-
-    exp = Experiment()
-    exp.set_model_graph([sd_pipe, refiner])
-    pass
