@@ -94,7 +94,7 @@ def main(args):
     diffusion_gen = DiffusionGeneration(inpaint_pipe, refine_pipe, hp_dict, device)
 
     # Get input
-    image = Image.open(output_url)
+    image = Image.open(img_url)
     mask = Image.open(maskReplace_url)
 
     # Generate Image

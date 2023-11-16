@@ -5,6 +5,8 @@ import numpy as np
 import cv2
 from PIL import Image
 
+from util.post_process import *
+
 
 class DiffusionGeneration:
     """

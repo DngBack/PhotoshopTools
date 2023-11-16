@@ -8,6 +8,14 @@ def getConfig():
     parser.add_argument("-p", "--prompt", type=str, help="Prompt to generate image")
     parser.add_argument("-n", "--negative_prompt", type=str, help="Negative prompt")
 
+    # Post Processing Setting
+    parser.add_argument(
+        "--post_processing_settings",
+        type=bool,
+        default=True,
+        help="post_processing_settings",
+    )
+
     parser.add_argument("--exp_num", default=0, type=str, help="experiment_number")
     parser.add_argument("--dataset", type=str, default="custom_dataset/", help="DUTS")
     parser.add_argument("--data_path", type=str, default="data/")
