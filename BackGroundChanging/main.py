@@ -60,10 +60,6 @@ def main(args):
     mask_image = 255 - mask_image
     cv2.imwrite(maskReplace_url, mask_image)
 
-    # resize Image for stable diffusion
-    image = load_image(img_url)
-    mask_image = load_image(maskReplace_url)
-
     # Setup hyper parameters
     hp_dict = {
         "seed": -305,
@@ -94,11 +90,11 @@ def main(args):
     )
 
     # Execute
-    diffusion_gen = DiffusionGeneration_v2(inpaint_pipe, refine_pipe, hp_dict, device)
+    diffusion_gen = DiffusionGeneration(inpaint_pipe, refine_pipe, hp_dict, device)
 
     # Get input
-    image = Image.open("./output/output.png")
-    mask = Image.open("./mask_replace/mask_replace.png")
+    image = Image.open(output_url)
+    mask = Image.open(maskReplace_url)
 
     # Generate Image
     output_Image = diffusion_gen.forward(image, mask)
