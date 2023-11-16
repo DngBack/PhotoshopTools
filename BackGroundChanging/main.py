@@ -7,7 +7,6 @@ from inference.inference import Inference
 import PIL.Image as Image
 import cv2
 import time
-from RealESRGAN import RealESRGAN
 from diffusers import AutoPipelineForInpainting
 from diffusers.utils import load_image
 from model.resolution import resolution
@@ -15,6 +14,7 @@ from model.bgChanging import ChangingBg
 from diffusers import StableDiffusionXLInpaintPipeline
 from diffusers import DiffusionPipeline
 from model.diffusion_gen import *
+from util.post_process import *
 
 from config import getConfig
 
@@ -39,6 +39,7 @@ def main(args):
     mask_url = "./mask/custom_dataset/Image.png"
     maskReplace_url = "./mask_replace/mask_replace.png"
     output_url = "./output/output.png"
+    output_final_url = "./output_final/output_final.png"
 
     # Get image
     input_url = "./Image/Test1.jpg"
@@ -99,6 +100,17 @@ def main(args):
     # Generate Image
     output_Image = diffusion_gen.forward(image, mask)
     output_Image.save(output_url)
+
+    # Post Processing
+    # Get input
+    ori_image = Image.open(img_url)
+    mask = Image.open(mask_url)
+    mask_replace = Image.open(maskReplace_url)
+    diff_image = Image.open(output_url)
+    # Execute
+    post_processing = PostProcessing(ori_image, mask, mask_replace, diff_image)
+    output_final = post_processing.overlay_object2output()
+    output_final.save(output_final_url)
 
 
 if __name__ == "__main__":

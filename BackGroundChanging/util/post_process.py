@@ -3,6 +3,25 @@ import numpy as np
 from PIL import Image
 
 
+class PostProcessing:
+    def __init__(self, ori_image, mask, mask_replace, diff_image):
+        self.ori_image = ori_image
+        self.mask = mask
+        self.mask_replace = mask_replace
+        self.diff_image = diff_image
+
+    def get_transparent_object(self):
+        trans_image = self.ori_image.copy()
+        trans_image.putalpha(self.mask)
+        return trans_image
+
+    def overlay_object2output(self):
+        trans_image = self.get_transparent_object()
+        trans_image = trans_image.convert("RGBA")
+        self.diff_image.paste(trans_image, trans_image)
+        return self.diff_image
+
+
 def make_transparent_mask(img_ori: np.array, img_mask: np.array):
     """
     Using contour filtering to determine target object, after that extract a transparent image
@@ -54,19 +73,3 @@ def replace_object(img: np.array, transparent_img: np.array):
     # Blend the foreground and background using alpha blending
     replace_img = (1.0 - mask) * img + mask * transparent_img[:, :, :3]
     return replace_img
-
-
-# if __name__ == "__main__":
-#     ori_path = "D:\\Hangers\\Inpainting\\images\\ori.png"
-#     mask_path = "D:\\Hangers\\Inpainting\\images\\mask.jpg"
-#     diff_path = "D:\\Hangers\\Inpainting\\images\\diff_out.jpg"
-
-#     img_ori = cv2.imread(ori_path)
-#     img_mask = cv2.imread(mask_path)
-#     img_diff = cv2.imread(diff_path)
-
-#     transparent_mask = make_transparent_mask(img_ori, img_mask)
-#     cv2.imwrite("tran.png", transparent_mask)
-
-#     replace_img = replace_object(img_diff, transparent_mask)
-#     cv2.imwrite("replace.png", replace_img)
