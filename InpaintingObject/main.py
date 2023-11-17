@@ -1,31 +1,62 @@
-from diffusers import AutoPipelineForInpainting
-from diffusers.utils import load_image
 import torch
+from diffusers import StableDiffusionXLInpaintPipeline
+from diffusers.utils import load_image
+from diffusers import DiffusionPipeline
+from PIL import Image
+from matplotlib import pyplot as plt
+import cv2
+import argparse
+from inpaint_gen import InpaintingGenerative
 
-pipe = AutoPipelineForInpainting.from_pretrained(
+# Argument
+parser = argparse.ArgumentParser(description="Process some integers.")
+
+parser.add_argument("-p", "--prompt", type=str, help="Prompt to generate image")
+parser.add_argument("-n", "--negative_prompt", type=str, help="Negative prompt")
+parser.add_argument("--input_path", type=str, default=None)
+parser.add_argument("--mask_path", type=str, default=None)
+
+
+args = parser.parse_args()
+
+# Setup hyper parameters
+hyper_params = {
+    "seed": 116,
+    "kernel_size": (5, 5),
+    "kernel_iterations": 15,
+    "num_inference_steps": 70,
+    "denoising_start": 0.70,
+    "guidance_scale": 7.5,
+    "prompt": args.prompt,
+    "negative_prompt": args.negative_prompt,
+}
+
+# Setup device
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Setup pipelines
+inpaint_pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
     "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
     torch_dtype=torch.float16,
     variant="fp16",
-).to("cuda")
+    use_safetensors=True,
+)
 
-img_url = "https://raw.githubusercontent.com/CompVis/latent-diffusion/main/data/inpainting_examples/overture-creations-5sI6fQgYIuo.png"
-mask_url = "https://raw.githubusercontent.com/CompVis/latent-diffusion/main/data/inpainting_examples/overture-creations-5sI6fQgYIuo_mask.png"
-output_url = "./Output/output.png"
+refine_pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
+    "stabilityai/stable-diffusion-xl-refiner-1.0",
+    text_encoder_2=inpaint_pipe.text_encoder_2,
+    vae=inpaint_pipe.vae,
+    torch_dtype=torch.float16,
+    use_safetensors=True,
+    variant="fp16",
+)
 
-image = load_image(img_url).resize((1024, 1024))
-mask_image = load_image(mask_url).resize((1024, 1024))
+# Execute
+diffusion_gen = InpaintingGenerative(inpaint_pipe, refine_pipe, hyper_params, device)
 
-prompt = "a tiger sitting on a park bench"
-generator = torch.Generator(device="cuda").manual_seed(0)
+image = Image.open(args.input_path)
+mask = Image.open(args.mask_url)
 
-image = pipe(
-    prompt=prompt,
-    image=image,
-    mask_image=mask_image,
-    guidance_scale=8.0,
-    num_inference_steps=20,  # steps between 15 and 30 work well for us
-    strength=0.99,  # make sure to use `strength` below 1.0
-    generator=generator,
-).images[0]
-
-image.save(output_url)
+# Generate Image
+output_Image = diffusion_gen.forward(image=image, mask=mask)
+output_Image.save("./output/output.png")
