@@ -4,7 +4,7 @@ import warnings
 import torch
 import numpy as np
 from inference.inference import Inference
-import PIL.Image as Image
+from PIL import Image, ImageOps
 import cv2
 import time
 from diffusers import AutoPipelineForInpainting
@@ -37,7 +37,7 @@ def main(args):
     # Set Some Config Path
     img_url = "./data/custom_dataset/Image.png"
     mask_url = "./mask/custom_dataset/Image.png"
-    maskReplace_url = "./mask_replace/mask_replace.png"
+    # maskReplace_url = "./mask_replace/mask_replace.png"
     output_url = "./output/output.png"
     output_final_url = "./output_final/output_final.png"
 
@@ -57,9 +57,9 @@ def main(args):
     print("Time of get mask processing: ", time.time() - t_getmask)
 
     # Get mask
-    mask_image = cv2.imread(mask_url, cv2.IMREAD_GRAYSCALE)
-    mask_image = 255 - mask_image
-    cv2.imwrite(maskReplace_url, mask_image)
+    # mask_image = cv2.imread(mask_url, cv2.IMREAD_GRAYSCALE)
+    # mask_image = 255 - mask_image
+    # cv2.imwrite(maskReplace_url, mask_image)
 
     # Setup hyper parameters
     hp_dict = {
@@ -95,20 +95,19 @@ def main(args):
 
     # Get input
     image = Image.open(img_url)
-    mask = Image.open(maskReplace_url)
+    mask = Image.open(mask_url)
 
     # Generate Image
-    output_Image = diffusion_gen.forward(image, mask)
+    output_Image = diffusion_gen.forward(image=image, mask=ImageOps.invert(mask))
     output_Image.save(output_url)
 
     # Post Processing
     # Get input
     ori_image = Image.open(img_url)
     mask = Image.open(mask_url)
-    mask_replace = Image.open(maskReplace_url)
     diff_image = Image.open(output_url)
     # Execute
-    post_processing = PostProcessing(ori_image, mask, mask_replace, diff_image)
+    post_processing = PostProcessing(ori_image, mask, diff_image)
     output_final = post_processing.overlay_object2output()
     output_final.save(output_final_url)
 

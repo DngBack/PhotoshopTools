@@ -4,10 +4,9 @@ from PIL import Image
 
 
 class PostProcessing:
-    def __init__(self, ori_image, mask, mask_replace, diff_image):
+    def __init__(self, ori_image, mask, diff_image):
         self.ori_image = ori_image
         self.mask = mask
-        self.mask_replace = mask_replace
         self.diff_image = diff_image
 
     def get_transparent_object(self):
