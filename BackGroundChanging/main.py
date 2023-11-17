@@ -37,12 +37,11 @@ def main(args):
     # Set Some Config Path
     img_url = "./data/custom_dataset/Image.png"
     mask_url = "./mask/custom_dataset/Image.png"
-    # maskReplace_url = "./mask_replace/mask_replace.png"
     output_url = "./output/output.png"
     output_final_url = "./output_final/output_final.png"
 
     # Get image
-    input_url = "./Image/Test1.jpg"
+    input_url = args.input_path
     inputImage = cv2.imread(input_url)
     save_input = cv2.imwrite(img_url, inputImage)
 
@@ -55,11 +54,6 @@ def main(args):
     t_getmask = time.time()
     Inference(args, save_path).test()
     print("Time of get mask processing: ", time.time() - t_getmask)
-
-    # Get mask
-    # mask_image = cv2.imread(mask_url, cv2.IMREAD_GRAYSCALE)
-    # mask_image = 255 - mask_image
-    # cv2.imwrite(maskReplace_url, mask_image)
 
     # Setup hyper parameters
     hp_dict = {
