@@ -70,7 +70,7 @@ class InpaintingGenerative:
         ori_size = image.size
 
         # Apply pipeline
-        result = self.refine_pipe(
+        result = self.refiner_pipe(
             prompt=self.hp_dict["prompt"],
             image=image,
             mask_image=mask,

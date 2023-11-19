@@ -40,7 +40,7 @@ inpaint_pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
     torch_dtype=torch.float16,
     variant="fp16",
     use_safetensors=True,
-)
+).to("cuda")
 
 refine_pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
     "stabilityai/stable-diffusion-xl-refiner-1.0",
@@ -49,13 +49,13 @@ refine_pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
     torch_dtype=torch.float16,
     use_safetensors=True,
     variant="fp16",
-)
+).to("cuda")
 
 # Execute
 diffusion_gen = InpaintingGenerative(inpaint_pipe, refine_pipe, hyper_params, device)
 
 image = Image.open(args.input_path)
-mask = Image.open(args.mask_url)
+mask = Image.open(args.mask_path)
 
 # Generate Image
 output_Image = diffusion_gen.forward(image=image, mask=mask)
