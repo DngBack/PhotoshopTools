@@ -124,3 +124,50 @@ class InpaintingGenerative:
         # Refining process
         refined_image = self.refiner_generate_image(inpainted_image, mask)
         return refined_image
+
+
+class InpaintingGenerativeV2:
+    def __init__(self, inpaint_pipe, hp_dict, device):
+        # set device
+        self.device = device
+
+        self.inpaint_pipe = inpaint_pipe.to(self.device)
+
+        self.hp_dict = hp_dict
+
+    def inpaint_generate_image(self, image, mask):
+        """
+        Inpainting function
+
+        Args:
+            image (PIL.Image): Input image
+            mask (PIL.Image): Mask image
+
+        Returns:
+            inpainted_image (PIL.Image): Inpainted image
+        """
+        # Save ori_size of input image to reconstruct
+        ori_size = image.size
+
+        # Resize image and mask to passing model
+        input_image = image.resize((1024, 1024))
+        input_mask = mask.resize((1024, 1024))
+
+        # Apply pipeline
+        generator = torch.Generator(self.device).manual_seed(self.hp_dict["seed"])
+        result = self.inpaint_pipe(
+            image=input_image,
+            mask_image=input_mask,
+            guidance_scale=self.hp_dict["guidance_scale"],
+            num_inference_steps=50,  # steps between 15 and 30 work well for us
+            strength=0.99,
+            prompt=self.hp_dict["prompt"],
+            negative_prompt=self.hp_dict["negative_prompt"],
+            generator=generator,
+        )
+        output_image = result.images[0]
+
+        # Resize inpainted image to original size
+        inpainted_image = output_image.resize(ori_size)
+
+        return inpainted_image

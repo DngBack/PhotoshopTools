@@ -6,7 +6,8 @@ from PIL import Image
 from matplotlib import pyplot as plt
 import cv2
 import argparse
-from inpaint_gen import InpaintingGenerative
+from inpaint_gen import InpaintingGenerativeV2
+from diffusers import StableDiffusionInpaintPipeline
 
 # Argument
 parser = argparse.ArgumentParser(description="Process some integers.")
@@ -35,24 +36,29 @@ hyper_params = {
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Setup pipelines
-inpaint_pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
-    "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
-    torch_dtype=torch.float16,
-    variant="fp16",
-    use_safetensors=True,
-).to("cuda")
+# inpaint_pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
+#     "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+#     torch_dtype=torch.float16,
+#     variant="fp16",
+#     use_safetensors=True,
+# ).to("cuda")
 
-refine_pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
-    "stabilityai/stable-diffusion-xl-refiner-1.0",
-    text_encoder_2=inpaint_pipe.text_encoder_2,
-    vae=inpaint_pipe.vae,
+# refine_pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
+#     "stabilityai/stable-diffusion-xl-refiner-1.0",
+#     text_encoder_2=inpaint_pipe.text_encoder_2,
+#     vae=inpaint_pipe.vae,
+#     torch_dtype=torch.float16,
+#     use_safetensors=True,
+#     variant="fp16",
+# ).to("cuda")
+
+inpaint_pipe = StableDiffusionInpaintPipeline.from_pretrained(
+    "stabilityai/stable-diffusion-2-inpainting",
     torch_dtype=torch.float16,
-    use_safetensors=True,
-    variant="fp16",
 ).to("cuda")
 
 # Execute
-diffusion_gen = InpaintingGenerative(inpaint_pipe, refine_pipe, hyper_params, device)
+diffusion_gen = InpaintingGenerativeV2(inpaint_pipe, hyper_params, device)
 
 image = Image.open(args.input_path)
 mask = Image.open(args.mask_path)
