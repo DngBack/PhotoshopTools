@@ -68,22 +68,14 @@ def main(args):
 
     # Model Pipeline calling
     inpaint_pipe = AutoPipelineForInpainting.from_pretrained(
-        "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+        "stabilityai/stable-diffusion-xl-base-1.0",
         torch_dtype=torch.float16,
         variant="fp16",
-    )
-
-    refine_pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
-        "stabilityai/stable-diffusion-xl-refiner-1.0",
-        text_encoder_2=inpaint_pipe.text_encoder_2,
-        vae=inpaint_pipe.vae,
-        torch_dtype=torch.float16,
         use_safetensors=True,
-        variant="fp16",
     )
 
     # Execute
-    diffusion_gen = DiffusionGenerationV2(inpaint_pipe, refine_pipe, hp_dict, device)
+    diffusion_gen = DiffusionGenerationV2(inpaint_pipe, hp_dict, device)
 
     # Get input
     image = Image.open(img_url)
