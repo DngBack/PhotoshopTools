@@ -9,10 +9,8 @@ import cv2
 import time
 from diffusers import AutoPipelineForInpainting
 from diffusers.utils import load_image
-from model.resolution import resolution
 from model.bgChanging import ChangingBg
 from diffusers import StableDiffusionXLInpaintPipeline
-from diffusers import DiffusionPipeline
 from model.diffusion_gen import *
 from util.post_process import *
 
@@ -85,7 +83,7 @@ def main(args):
     )
 
     # Execute
-    diffusion_gen = DiffusionGeneration(inpaint_pipe, refine_pipe, hp_dict, device)
+    diffusion_gen = DiffusionGenerationV2(inpaint_pipe, refine_pipe, hp_dict, device)
 
     # Get input
     image = Image.open(img_url)
@@ -100,6 +98,7 @@ def main(args):
     ori_image = Image.open(img_url)
     mask = Image.open(mask_url)
     diff_image = Image.open(output_url)
+
     # Execute
     post_processing = PostProcessing(ori_image, mask, diff_image)
     output_final = post_processing.overlay_object2output()
