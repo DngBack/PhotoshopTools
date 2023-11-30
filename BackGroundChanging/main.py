@@ -10,7 +10,6 @@ import time
 from diffusers import AutoPipelineForInpainting
 from diffusers.utils import load_image
 from model.bgChanging import ChangingBg
-from diffusers import StableDiffusionXLInpaintPipeline
 from model.diffusion_gen import *
 from util.post_process import *
 
@@ -82,7 +81,7 @@ def main(args):
     mask = Image.open(mask_url)
 
     # Generate Image
-    output_Image = diffusion_gen.forward(image=image, mask=ImageOps.invert(mask))
+    output_Image = diffusion_gen.inpaint_image(image=image, mask=ImageOps.invert(mask))
     output_Image.save(output_url)
 
     # Post Processing
