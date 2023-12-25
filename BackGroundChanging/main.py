@@ -17,9 +17,10 @@ from config import getConfig, getConfig_Input
 
 warnings.filterwarnings("ignore")
 args = getConfig_Input()
+args_model = getConfig()
 
 
-def main(args):
+def main(args_model):
     # Random Seed
     seed = args.seed
     os.environ["PYTHONHASHSEED"] = str(seed)
@@ -48,7 +49,7 @@ def main(args):
     )
 
     # Get pre-mask
-    Inference(args, save_path).test()
+    Inference(args_model, save_path).test()
 
     # Setup hyper parameters
     hp_dict = {
