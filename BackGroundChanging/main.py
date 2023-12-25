@@ -49,7 +49,7 @@ def main(args):
     )
 
     # Get pre-mask
-    Inference(args_model, save_path).test()
+    Inference(args, save_path).test()
 
     # Setup hyper parameters
     hp_dict = {
