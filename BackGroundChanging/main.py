@@ -16,11 +16,11 @@ from util.post_process import *
 from config import getConfig, getConfig_Input
 
 warnings.filterwarnings("ignore")
-args = getConfig_Input()
-args_model = getConfig()
+# args = getConfig_Input()
+args = getConfig()
 
 
-def main(args_model):
+def main(args):
     # Random Seed
     seed = args.seed
     os.environ["PYTHONHASHSEED"] = str(seed)
