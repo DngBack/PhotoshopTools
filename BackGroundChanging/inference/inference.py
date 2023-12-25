@@ -74,12 +74,14 @@ class Inference:
                             output.squeeze().detach().cpu().numpy() * 255.0
                         ).astype(np.uint8)
 
-                        cv2.imwrite(
-                            os.path.join(
-                                "mask", self.args.dataset, image_name[i] + ".png"
-                            ),
-                            output,
-                        )
+                        # cv2.imwrite(
+                        #     os.path.join(
+                        #         "mask", self.args.dataset, image_name[i] + ".png"
+                        #     ),
+                        #     output,
+                        # )
+
+                        return output
 
     def post_processing(
         self, original_image, output_image, height, width, threshold=200

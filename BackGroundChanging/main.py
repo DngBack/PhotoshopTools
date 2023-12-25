@@ -34,8 +34,8 @@ def main(args):
 
     # Set Some Config Path
     img_url = "./data/custom_dataset/Image.png"
-    mask_url = "./mask/custom_dataset/Image.png"
-    output_url = "./output/output.png"
+    # mask_url = "./mask/custom_dataset/Image.png"
+    # output_url = "./output/output.png"
     output_final_url = "./output_final/output_final.png"
 
     # Get image
@@ -49,7 +49,12 @@ def main(args):
     )
 
     # Get pre-mask
-    Inference(args, save_path).test()
+    mask_of_image = Inference(args, save_path).test()
+    rgb_image = cv2.cvtColor(mask_of_image, cv2.COLOR_BGR2RGB)
+    mask = Image.fromarray(rgb_image)
+    thresh = 200
+    fn = lambda x : 255 if x > thresh else 0
+    mask = mask.convert('L').point(fn, mode='1')
 
     # Setup hyper parameters
     hp_dict = {
@@ -77,20 +82,20 @@ def main(args):
 
     # Get input
     image = Image.open(img_url)
-    mask = Image.open(mask_url)
+    # mask = Image.open(mask_url)
 
     # Generate Image
     output_Image = diffusion_gen.inpaint_image(image=image, mask=ImageOps.invert(mask))
-    output_Image.save(output_url)
+    # output_Image.save(output_url)
 
     # Post Processing
     # Get input
-    ori_image = Image.open(img_url)
-    mask = Image.open(mask_url)
-    diff_image = Image.open(output_url)
+    # ori_image = Image.open(img_url)
+    # # mask = Image.open(mask_url)
+    # diff_image = Image.open(output_url)
 
-    # Execute
-    post_processing = PostProcessing(ori_image, mask, diff_image)
+    # # Execute
+    post_processing = PostProcessing(image, mask, output_Image)
     output_final = post_processing.overlay_object2output()
     output_final.save(output_final_url)
 
