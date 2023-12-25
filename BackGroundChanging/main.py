@@ -13,10 +13,10 @@ from model.bgChanging import ChangingBg
 from model.diffusion_gen import *
 from util.post_process import *
 
-from config import getConfig
+from config import getConfig, getConfig_Input
 
 warnings.filterwarnings("ignore")
-args = getConfig()
+args = getConfig_Input()
 
 
 def main(args):
@@ -48,9 +48,7 @@ def main(args):
     )
 
     # Get pre-mask
-    t_getmask = time.time()
     Inference(args, save_path).test()
-    print("Time of get mask processing: ", time.time() - t_getmask)
 
     # Setup hyper parameters
     hp_dict = {

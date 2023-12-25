@@ -1,13 +1,20 @@
 import argparse
 
-
-def getConfig():
+def getConfig_Input(): 
     parser = argparse.ArgumentParser()
 
     # Prompt Condition settings
     parser.add_argument("-p", "--prompt", type=str, help="Prompt to generate image")
     parser.add_argument("-n", "--negative_prompt", type=str, help="Negative prompt")
     parser.add_argument("--input_path", type=str, default=None)
+
+def getConfig():
+    parser = argparse.ArgumentParser()
+
+    # Prompt Condition settings
+    # parser.add_argument("-p", "--prompt", type=str, help="Prompt to generate image")
+    # parser.add_argument("-n", "--negative_prompt", type=str, help="Negative prompt")
+    # parser.add_argument("--input_path", type=str, default=None)
 
     # Post Processing Setting
     parser.add_argument(
