@@ -30,7 +30,7 @@ ftfy
 gradio
 accelerate
 torch
-git+https://github.com/sberbank-ai/Real-ESRGAN.git
+# git+https://github.com/sberbank-ai/Real-ESRGAN.git
 pipe
 huggingface_hub 
 accelerate 
